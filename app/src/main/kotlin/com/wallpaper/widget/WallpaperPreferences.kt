@@ -10,7 +10,7 @@ object WallpaperPreferences {
     private const val KEY_SCREEN_OFF_TIME = "screen_off_time"
     private const val KEY_AUTO_RESET_ENABLED = "auto_reset_enabled"
 
-    const val SCREEN_OFF_THRESHOLD_MS = 10 * 60 * 1000L // 10분
+    const val SCREEN_OFF_THRESHOLD_MS = 2 * 60 * 1000L // 2분
 
     private fun prefs(context: Context): SharedPreferences =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)

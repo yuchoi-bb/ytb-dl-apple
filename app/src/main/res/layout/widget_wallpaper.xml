@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="@drawable/widget_bg"
+    android:padding="12dp">
+
+    <ImageView
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/ic_wallpaper"
+        android:tint="#FFFFFF"
+        android:contentDescription="@string/widget_label" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/widget_label"
+        android:textColor="#FFFFFF"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:layout_marginTop="6dp" />
+
+    <!-- 배경화면 선택 버튼 -->
+    <TextView
+        android:id="@+id/btn_pick_wallpaper"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/change_wallpaper"
+        android:textColor="#FFFFFF"
+        android:textSize="11sp"
+        android:background="@drawable/btn_widget_bg"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp"
+        android:layout_marginTop="8dp" />
+
+    <!-- 앱 열기 버튼 -->
+    <TextView
+        android:id="@+id/btn_open_app"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/open_app"
+        android:textColor="#CCFFFFFF"
+        android:textSize="10sp"
+        android:layout_marginTop="4dp" />
+
+</LinearLayout>

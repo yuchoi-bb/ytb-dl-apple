@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="white">#FFFFFF</color>
+    <color name="bg_dark">#121212</color>
+    <color name="preview_bg">#2A2A2A</color>
+    <color name="accent">#6200EE</color>
+    <color name="accent_secondary">#03DAC5</color>
+    <color name="text_secondary">#AAAAAA</color>
+    <color name="widget_bg_start">#CC6200EE</color>
+    <color name="widget_bg_end">#CC3700B3</color>
+</resources>

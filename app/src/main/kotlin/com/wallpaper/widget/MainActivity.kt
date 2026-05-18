@@ -1,7 +1,6 @@
 package com.wallpaper.widget
 
 import android.Manifest
-import android.app.WallpaperManager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -21,7 +20,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private var selectedImageUri: Uri? = null
 
-    // 이미지 선택 결과 처리
     private val pickImageLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -33,26 +31,63 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // 권한 요청 결과 처리
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
         if (granted) openGallery()
-        else Toast.makeText(this, getString(R.string.permission_denied), Toast.LENGTH_SHORT).show()
+        else Toast.makeText(this, R.string.permission_denied, Toast.LENGTH_SHORT).show()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         setupUI()
+        showDeviceInfo()
+        ScreenWatchService.start(this)
     }
 
     private fun setupUI() {
         binding.btnSelectImage.setOnClickListener { checkPermissionAndOpenGallery() }
         binding.btnSetWallpaper.setOnClickListener { showWallpaperTargetDialog() }
+        binding.btnSetDefault.setOnClickListener { showSetDefaultDialog() }
         binding.btnSetWallpaper.isEnabled = false
+        binding.btnSetDefault.isEnabled = false
+        updateDefaultWallpaperPreview()
+        updateAutoResetSwitch()
+        binding.switchAutoReset.setOnCheckedChangeListener { _, checked ->
+            WallpaperPreferences.setAutoResetEnabled(this, checked)
+            if (checked) ScreenWatchService.start(this) else ScreenWatchService.stop(this)
+        }
+    }
+
+    private fun showDeviceInfo() {
+        val info = DeviceInfo.getScreenInfo(this)
+        val (desiredW, desiredH) = DeviceInfo.getDesiredWallpaperSize(this)
+        binding.tvDeviceModel.text = info.displayName
+        binding.tvDeviceResolution.text = getString(
+            R.string.device_resolution_fmt,
+            info.resolution,
+            info.densityLabel,
+            info.densityDpi,
+            desiredW,
+            desiredH
+        )
+    }
+
+    private fun updateDefaultWallpaperPreview() {
+        val bmp = WallpaperResetManager.getDefaultWallpaperBitmap(this)
+        if (bmp != null) {
+            binding.ivDefaultPreview.setImageBitmap(bmp)
+            binding.tvDefaultStatus.text = getString(R.string.default_set)
+        } else {
+            binding.ivDefaultPreview.setImageDrawable(null)
+            binding.tvDefaultStatus.text = getString(R.string.default_not_set)
+        }
+    }
+
+    private fun updateAutoResetSwitch() {
+        binding.switchAutoReset.isChecked = WallpaperPreferences.isAutoResetEnabled(this)
     }
 
     private fun checkPermissionAndOpenGallery() {
@@ -64,14 +99,13 @@ class MainActivity : AppCompatActivity() {
         when {
             ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED ->
                 openGallery()
-            shouldShowRequestPermissionRationale(permission) -> {
+            shouldShowRequestPermissionRationale(permission) ->
                 AlertDialog.Builder(this)
                     .setTitle(R.string.permission_needed)
                     .setMessage(R.string.permission_rationale)
                     .setPositiveButton(R.string.grant) { _, _ -> requestPermissionLauncher.launch(permission) }
                     .setNegativeButton(R.string.cancel, null)
                     .show()
-            }
             else -> requestPermissionLauncher.launch(permission)
         }
     }
@@ -84,12 +118,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showPreview(uri: Uri) {
-        Glide.with(this)
-            .load(uri)
-            .centerCrop()
-            .into(binding.ivPreview)
-
+        Glide.with(this).load(uri).centerCrop().into(binding.ivPreview)
         binding.btnSetWallpaper.isEnabled = true
+        binding.btnSetDefault.isEnabled = true
         binding.tvHint.text = getString(R.string.image_selected)
     }
 
@@ -102,33 +133,41 @@ class MainActivity : AppCompatActivity() {
         AlertDialog.Builder(this)
             .setTitle(R.string.select_target)
             .setItems(options) { _, which ->
+                val target = when (which) {
+                    0 -> WallpaperTarget.HOME
+                    1 -> WallpaperTarget.LOCK
+                    else -> WallpaperTarget.BOTH
+                }
+                selectedImageUri?.let { setWallpaper(it, target) }
+            }
+            .show()
+    }
+
+    private fun showSetDefaultDialog() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.set_default_title)
+            .setMessage(R.string.set_default_message)
+            .setPositiveButton(R.string.confirm) { _, _ ->
                 selectedImageUri?.let { uri ->
-                    val target = when (which) {
-                        0 -> WallpaperTarget.HOME
-                        1 -> WallpaperTarget.LOCK
-                        else -> WallpaperTarget.BOTH
+                    WallpaperResetManager.saveDefaultWallpaper(this, uri) { success ->
+                        val msg = if (success) R.string.default_saved else R.string.wallpaper_set_failed
+                        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+                        if (success) updateDefaultWallpaperPreview()
                     }
-                    setWallpaper(uri, target)
                 }
             }
+            .setNegativeButton(R.string.cancel, null)
             .show()
     }
 
     private fun setWallpaper(uri: Uri, target: WallpaperTarget) {
         binding.btnSetWallpaper.isEnabled = false
         binding.tvStatus.text = getString(R.string.setting_wallpaper)
-
         WallpaperHelper.setWallpaper(this, uri, target) { success ->
-            runOnUiThread {
-                binding.btnSetWallpaper.isEnabled = true
-                if (success) {
-                    binding.tvStatus.text = getString(R.string.wallpaper_set_success)
-                    Toast.makeText(this, R.string.wallpaper_set_success, Toast.LENGTH_SHORT).show()
-                } else {
-                    binding.tvStatus.text = getString(R.string.wallpaper_set_failed)
-                    Toast.makeText(this, R.string.wallpaper_set_failed, Toast.LENGTH_SHORT).show()
-                }
-            }
+            binding.btnSetWallpaper.isEnabled = true
+            val msgRes = if (success) R.string.wallpaper_set_success else R.string.wallpaper_set_failed
+            binding.tvStatus.text = getString(msgRes)
+            Toast.makeText(this, msgRes, Toast.LENGTH_SHORT).show()
         }
     }
 }

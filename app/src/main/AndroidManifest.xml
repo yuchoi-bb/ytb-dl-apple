@@ -5,7 +5,9 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
     <application
         android:allowBackup="true"
@@ -15,7 +17,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.WallpaperWidget">
 
-        <!-- 메인 액티비티 -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -26,27 +27,40 @@
             </intent-filter>
         </activity>
 
-        <!-- 배경화면 선택 액티비티 (위젯에서 호출) -->
         <activity
             android:name=".WallpaperPickerActivity"
             android:exported="true"
             android:theme="@style/Theme.WallpaperWidget" />
 
-        <!-- 홈 화면 위젯 프로바이더 -->
         <receiver
             android:name=".WallpaperWidgetProvider"
             android:exported="true"
             android:label="@string/widget_label">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="com.wallpaper.widget.ACTION_SET_WALLPAPER" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_info" />
         </receiver>
 
-        <!-- 위젯 업데이트 서비스 -->
+        <receiver
+            android:name=".BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name=".ScreenWatchService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="screen_monitor" />
+        </service>
+
         <service
             android:name=".WallpaperWidgetService"
             android:exported="false"

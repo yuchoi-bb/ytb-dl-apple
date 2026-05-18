@@ -6,11 +6,13 @@
 
     <string name="select_image">이미지 선택</string>
     <string name="set_wallpaper">배경화면 설정</string>
+    <string name="set_as_default">기본 배경화면으로 저장</string>
     <string name="apply_wallpaper">적용</string>
     <string name="change_wallpaper">배경화면 변경</string>
     <string name="open_app">앱 열기</string>
     <string name="cancel">취소</string>
     <string name="grant">허용</string>
+    <string name="confirm">확인</string>
 
     <string name="home_screen">홈 화면</string>
     <string name="lock_screen">잠금 화면</string>
@@ -29,4 +31,23 @@
 
     <string name="preview_desc">선택한 이미지 미리보기</string>
     <string name="pick_title">배경화면 선택</string>
+
+    <!-- 디바이스 정보 -->
+    <string name="device_info_title">디바이스 정보</string>
+    <string name="device_resolution_fmt">해상도: %1$s · %2$s (%3$ddpi)\n권장 배경화면: %4$d×%5$dpx</string>
+
+    <!-- 자동 복원 -->
+    <string name="auto_reset_title">10분 자동 복원</string>
+    <string name="auto_reset_desc">화면을 10분 이상 끄면 기본 배경화면으로 복원합니다</string>
+    <string name="auto_reset_done">기본 배경화면으로 복원되었습니다</string>
+    <string name="default_wallpaper_label">기본 배경화면</string>
+    <string name="default_set">기본 배경화면이 설정되어 있습니다</string>
+    <string name="default_not_set">기본 배경화면이 설정되지 않았습니다</string>
+    <string name="default_saved">기본 배경화면으로 저장되었습니다</string>
+    <string name="set_default_title">기본 배경화면 설정</string>
+    <string name="set_default_message">현재 선택한 이미지를 10분 자동 복원의 기본 배경화면으로 저장하시겠습니까?</string>
+
+    <!-- 알림 -->
+    <string name="notif_channel_name">화면 감시</string>
+    <string name="notif_watching">자동 배경화면 복원 활성화됨</string>
 </resources>

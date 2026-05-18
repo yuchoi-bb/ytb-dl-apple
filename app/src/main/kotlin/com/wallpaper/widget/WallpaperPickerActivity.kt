@@ -15,10 +15,6 @@ import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.wallpaper.widget.databinding.ActivityWallpaperPickerBinding
 
-/**
- * 위젯에서 직접 열리는 경량 배경화면 선택 화면.
- * 이미지 선택 → 미리보기 → 적용 대상 선택 → 설정 완료 후 종료.
- */
 class WallpaperPickerActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityWallpaperPickerBinding
@@ -33,6 +29,8 @@ class WallpaperPickerActivity : AppCompatActivity() {
                 Glide.with(this).load(uri).centerCrop().into(binding.ivPreview)
                 binding.btnApply.isEnabled = true
             }
+        } else {
+            finish()
         }
     }
 
@@ -56,7 +54,6 @@ class WallpaperPickerActivity : AppCompatActivity() {
         binding.btnApply.setOnClickListener { showTargetDialog() }
         binding.btnCancel.setOnClickListener { finish() }
 
-        // 위젯에서 열리면 바로 갤러리 실행
         checkPermission()
     }
 
@@ -65,7 +62,6 @@ class WallpaperPickerActivity : AppCompatActivity() {
             Manifest.permission.READ_MEDIA_IMAGES
         else
             Manifest.permission.READ_EXTERNAL_STORAGE
-
         if (ContextCompat.checkSelfPermission(this, perm) == PackageManager.PERMISSION_GRANTED)
             launchGallery()
         else
@@ -102,11 +98,9 @@ class WallpaperPickerActivity : AppCompatActivity() {
         val uri = selectedUri ?: return
         binding.btnApply.isEnabled = false
         WallpaperHelper.setWallpaper(this, uri, target) { success ->
-            runOnUiThread {
-                val msg = if (success) R.string.wallpaper_set_success else R.string.wallpaper_set_failed
-                Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
-                finish()
-            }
+            val msg = if (success) R.string.wallpaper_set_success else R.string.wallpaper_set_failed
+            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+            finish()
         }
     }
 }

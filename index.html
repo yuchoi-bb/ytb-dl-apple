@@ -3,36 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ytudl-web | YouTube MP3</title>
+  <title>ytb-web | YouTube MP3</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --bg: #0f0f0f;
-      --surface: #1a1a1a;
-      --card: #212121;
-      --border: #2e2e2e;
-      --accent: #ff4444;
-      --accent-h: #ff6666;
-      --text: #f1f1f1;
-      --muted: #aaa;
-      --r: 10px;
+      --bg: #0f0f0f; --surface: #1a1a1a; --card: #212121;
+      --border: #2e2e2e; --accent: #ff4444; --accent-h: #ff6666;
+      --text: #f1f1f1; --muted: #aaa; --r: 10px;
     }
+    body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      min-height: 100vh;
-    }
-
-    /* ── Header ── */
     .header {
       position: sticky; top: 0; z-index: 100;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 12px 16px;
-      display: flex; align-items: center; gap: 12px;
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 12px 16px; display: flex; align-items: center; gap: 12px;
     }
     .logo { display: flex; align-items: center; gap: 7px; flex-shrink: 0; }
     .logo-icon { font-size: 18px; color: var(--accent); }
@@ -56,100 +40,61 @@
     }
     .search-btn:active { background: var(--accent-h); }
 
-    /* ── Main ── */
     .main { padding: 16px; }
-
-    .status {
-      text-align: center; padding: 32px 16px;
-      color: var(--muted); font-size: 15px; line-height: 1.6;
-    }
+    .status { text-align: center; padding: 32px 16px; color: var(--muted); font-size: 15px; line-height: 1.6; }
     .status.error { color: #ff6b6b; }
     .hidden { display: none !important; }
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 14px;
-    }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
 
-    /* ── Card ── */
     .card {
       background: var(--card); border-radius: var(--r);
-      border: 1px solid var(--border);
-      overflow: hidden; display: flex; flex-direction: column;
+      border: 1px solid var(--border); overflow: hidden;
+      display: flex; flex-direction: column;
     }
-
-    .thumb-wrap {
-      position: relative; aspect-ratio: 16/9;
-      background: #111; overflow: hidden;
-    }
+    .thumb-wrap { position: relative; aspect-ratio: 16/9; background: #111; overflow: hidden; }
     .thumb-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .dur {
       position: absolute; bottom: 6px; right: 8px;
       background: rgba(0,0,0,.85); color: #fff;
-      font-size: 12px; padding: 2px 6px; border-radius: 4px;
-      font-family: monospace;
+      font-size: 12px; padding: 2px 6px; border-radius: 4px; font-family: monospace;
     }
-
-    .card-body {
-      padding: 11px 13px; display: flex;
-      flex-direction: column; flex: 1; gap: 4px;
-    }
+    .card-body { padding: 11px 13px; display: flex; flex-direction: column; flex: 1; gap: 4px; }
     .card-title {
       font-size: 14px; font-weight: 600; line-height: 1.4;
-      display: -webkit-box; -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical; overflow: hidden;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
     .card-ch { font-size: 13px; color: var(--muted); }
-    .card-footer {
-      display: flex; align-items: center;
-      justify-content: space-between;
-      margin-top: auto; padding-top: 10px;
-    }
+    .card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 10px; }
     .card-views { font-size: 12px; color: var(--muted); }
 
     .dl-btn {
       display: flex; align-items: center; gap: 5px;
-      padding: 8px 14px; background: var(--accent);
-      color: #fff; border: none; border-radius: 6px;
-      font-size: 13px; font-weight: 600; cursor: pointer;
-      white-space: nowrap;
-      -webkit-tap-highlight-color: transparent;
-      min-height: 36px;
+      padding: 8px 14px; background: var(--accent); color: #fff;
+      border: none; border-radius: 6px; font-size: 13px; font-weight: 600;
+      cursor: pointer; white-space: nowrap;
+      -webkit-tap-highlight-color: transparent; min-height: 36px;
     }
     .dl-btn:active { background: var(--accent-h); }
     .dl-btn:disabled { background: #444; cursor: not-allowed; }
 
-    /* ── Progress bar ── */
-    .progress-wrap {
-      height: 3px; background: var(--border); border-radius: 2px;
-      margin-top: 8px; overflow: hidden; display: none;
-    }
-    .progress-bar {
-      height: 100%; background: var(--accent);
-      border-radius: 2px; width: 0%;
-      transition: width 0.2s;
-    }
+    .progress-wrap { height: 3px; background: var(--border); border-radius: 2px; margin-top: 8px; overflow: hidden; display: none; }
+    .progress-bar { height: 100%; background: var(--accent); border-radius: 2px; width: 0%; transition: width 0.2s; }
 
     @keyframes spin { to { transform: rotate(360deg); } }
     .spin {
       display: inline-block; width: 14px; height: 14px;
-      border: 2px solid rgba(255,255,255,.3);
-      border-top-color: #fff;
+      border: 2px solid rgba(255,255,255,.3); border-top-color: #fff;
       border-radius: 50%; animation: spin .6s linear infinite;
       vertical-align: middle; flex-shrink: 0;
     }
-
-    /* ── Toast ── */
     .toast {
       position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
       background: #333; color: #fff; padding: 10px 20px;
       border-radius: 20px; font-size: 14px; z-index: 9999;
-      opacity: 0; transition: opacity .3s; pointer-events: none;
-      white-space: nowrap;
+      opacity: 0; transition: opacity .3s; pointer-events: none; white-space: nowrap;
     }
     .toast.show { opacity: 1; }
-
     @media (max-width: 480px) {
       .header { flex-direction: column; align-items: stretch; gap: 10px; }
       .logo { justify-content: center; }
@@ -158,12 +103,8 @@
   </style>
 </head>
 <body>
-
 <header class="header">
-  <div class="logo">
-    <span class="logo-icon">&#9654;</span>
-    <span class="logo-text">ytudl-web</span>
-  </div>
+  <div class="logo"><span class="logo-icon">&#9654;</span><span class="logo-text">ytb-web</span></div>
   <form class="search-form" id="form">
     <input id="q" class="search-input" type="search"
       placeholder="제목 또는 아티스트 검색..."
@@ -171,24 +112,36 @@
     <button type="submit" class="search-btn">검색</button>
   </form>
 </header>
-
 <main class="main">
   <div id="status" class="status">검색어를 입력하세요.</div>
   <div id="grid" class="grid hidden"></div>
 </main>
-
 <div id="toast" class="toast"></div>
 
 <script>
 (function () {
   'use strict';
 
-  const INSTANCES = [
+  // ── 검색 서버 목록 (Invidious + Piped, 동시 요청 → 가장 빠른 응답 사용) ──
+  const INV = [
     'https://inv.nadeko.net',
+    'https://yewtu.be',
     'https://invidious.privacyredirect.com',
-    'https://iv.datura.network',
+    'https://invidious.fdn.fr',
+    'https://invidious.lunar.icu',
+    'https://invidious.perennialte.ch',
     'https://invidious.nerdvpn.de',
-    'https://yt.drgnz.club'
+    'https://id.invidious.io',
+    'https://iv.datura.network',
+    'https://invidious.io',
+  ];
+
+  const PIPED = [
+    'https://pipedapi.kavin.rocks',
+    'https://pipedapi.adminforge.de',
+    'https://api.piped.projectsegfau.lt',
+    'https://piped-api.garudalinux.org',
+    'https://pipedapi.drgns.space',
   ];
 
   const COBALT = 'https://api.cobalt.tools/';
@@ -206,207 +159,183 @@
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => $toast.classList.remove('show'), 2800);
   }
-
   function setStatus(html, err = false) {
     $status.innerHTML = html;
     $status.className = 'status' + (err ? ' error' : '');
     $status.classList.remove('hidden');
     $grid.classList.add('hidden');
   }
-
   function showGrid() {
     $status.classList.add('hidden');
     $grid.classList.remove('hidden');
   }
-
   function fmtDur(s) {
     if (!s) return '';
-    const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
-    return h > 0
-      ? `${h}:${pad(m)}:${pad(sec)}`
-      : `${m}:${pad(sec)}`;
+    const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60;
+    return h > 0 ? `${h}:${pad(m)}:${pad(sec)}` : `${m}:${pad(sec)}`;
   }
-  function pad(n) { return String(n).padStart(2, '0'); }
-
+  function pad(n) { return String(n).padStart(2,'0'); }
   function fmtViews(n) {
     if (!n) return '';
     if (n >= 1e8) return `${(n/1e8).toFixed(0)}억 뷰`;
     if (n >= 1e4) return `${(n/1e4).toFixed(0)}만 뷰`;
     return `${n} 뷰`;
   }
-
   function escH(s) {
-    return String(s)
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
-  // ── Search via Invidious ──
+  // ── Invidious API ──
+  async function searchInv(query, base) {
+    const p = new URLSearchParams({q: query, type: 'video',
+      fields: 'videoId,title,author,lengthSeconds,viewCount,videoThumbnails'});
+    const res = await fetch(`${base}/api/v1/search?${p}`, {signal: AbortSignal.timeout(10000)});
+    if (!res.ok) throw new Error(`${res.status}`);
+    return (await res.json()).map(v => ({
+      id: v.videoId, title: v.title, channel: v.author,
+      duration: v.lengthSeconds, views: v.viewCount,
+      thumb: (v.videoThumbnails||[]).find(t=>t.quality==='medium')?.url
+             || `https://img.youtube.com/vi/${v.videoId}/mqdefault.jpg`
+    }));
+  }
+
+  // ── Piped API ──
+  async function searchPiped(query, base) {
+    const res = await fetch(
+      `${base}/search?q=${encodeURIComponent(query)}&filter=videos`,
+      {signal: AbortSignal.timeout(10000)}
+    );
+    if (!res.ok) throw new Error(`${res.status}`);
+    const data = await res.json();
+    return (data.items||[])
+      .filter(v => v.url?.startsWith('/watch'))
+      .map(v => {
+        const id = new URLSearchParams(v.url.split('?')[1]).get('v');
+        return { id, title: v.title, channel: v.uploaderName,
+                 duration: v.duration, views: v.views,
+                 thumb: v.thumbnail || `https://img.youtube.com/vi/${id}/mqdefault.jpg` };
+      });
+  }
+
+  // ── 모든 서버 동시 요청, 가장 빠른 성공 응답 사용 ──
   async function search(query) {
-    const params = new URLSearchParams({
-      q: query, type: 'video',
-      fields: 'videoId,title,author,lengthSeconds,viewCount,videoThumbnails'
-    });
-    for (const base of INSTANCES) {
-      try {
-        const res = await fetch(`${base}/api/v1/search?${params}`,
-          { signal: AbortSignal.timeout(8000) });
-        if (!res.ok) continue;
-        return await res.json();
-      } catch { /* next */ }
-    }
-    throw new Error('검색 서버에 연결할 수 없습니다. 잠시 후 다시 시도하세요.');
+    const tasks = [
+      ...INV.map(b => searchInv(query, b)),
+      ...PIPED.map(b => searchPiped(query, b)),
+    ];
+    const result = await Promise.any(tasks);
+    if (!result?.length) throw new Error('결과 없음');
+    return result;
   }
 
-  // ── cobalt.tools → download URL ──
+  // ── cobalt.tools → MP3 URL ──
   async function getCobaltUrl(videoId) {
     const res = await fetch(COBALT, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
       body: JSON.stringify({
         url: `https://www.youtube.com/watch?v=${videoId}`,
-        downloadMode: 'audio',
-        audioFormat: 'mp3',
-        audioBitrate: '128'
+        downloadMode: 'audio', audioFormat: 'mp3', audioBitrate: '128'
       }),
       signal: AbortSignal.timeout(20000)
     });
-    if (!res.ok) throw new Error(`cobalt 오류 (HTTP ${res.status})`);
+    if (!res.ok) throw new Error(`cobalt HTTP ${res.status}`);
     const data = await res.json();
     if (data.status === 'error') throw new Error(data.error?.code || '변환 실패');
     if (data.url) return data.url;
-    throw new Error('다운로드 URL을 받지 못했습니다');
+    throw new Error('URL 없음');
   }
 
-  // ── Download: fetch→blob (Android 호환) ──
+  // ── fetch → blob (Android Chrome 다운로드 호환) ──
   async function downloadBlob(url, filename, onProgress) {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-    const total = parseInt(res.headers.get('content-length') || '0', 10);
+    const total = parseInt(res.headers.get('content-length')||'0', 10);
     const reader = res.body.getReader();
     const chunks = [];
     let received = 0;
-
     while (true) {
-      const { done, value } = await reader.read();
+      const {done, value} = await reader.read();
       if (done) break;
-      chunks.push(value);
-      received += value.length;
+      chunks.push(value); received += value.length;
       if (total > 0) onProgress(received / total);
     }
-
-    const blob = new Blob(chunks, { type: 'audio/mpeg' });
+    const blob = new Blob(chunks, {type: 'audio/mpeg'});
     const blobUrl = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = blobUrl;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    a.href = blobUrl; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
   }
 
-  // ── Render ──
+  // ── 카드 렌더링 ──
   function renderResults(items) {
     if (!items.length) { setStatus('검색 결과가 없습니다.'); return; }
     $grid.innerHTML = '';
-
     items.forEach(item => {
-      const thumb = (item.videoThumbnails || [])
-        .find(t => t.quality === 'medium' || t.quality === 'mq')?.url
-        || `https://img.youtube.com/vi/${item.videoId}/mqdefault.jpg`;
-      const dur = fmtDur(item.lengthSeconds);
-      const safeTitle = escH(item.title);
-      const safeCh = escH(item.author);
-
+      const dur = fmtDur(item.duration);
       const card = document.createElement('div');
       card.className = 'card';
       card.innerHTML = `
         <div class="thumb-wrap">
-          <img src="${thumb}" alt="" loading="lazy" decoding="async" />
+          <img src="${item.thumb}" alt="" loading="lazy" decoding="async" />
           ${dur ? `<span class="dur">${dur}</span>` : ''}
         </div>
         <div class="card-body">
-          <div class="card-title">${safeTitle}</div>
-          <div class="card-ch">${safeCh}</div>
+          <div class="card-title">${escH(item.title)}</div>
+          <div class="card-ch">${escH(item.channel||'')}</div>
           <div class="card-footer">
-            <span class="card-views">${fmtViews(item.viewCount)}</span>
-            <button class="dl-btn"
-              data-id="${item.videoId}"
-              data-title="${escH(item.title)}">
-              &#8595; MP3
-            </button>
+            <span class="card-views">${fmtViews(item.views)}</span>
+            <button class="dl-btn" data-id="${item.id}" data-title="${escH(item.title)}">&#8595; MP3</button>
           </div>
           <div class="progress-wrap"><div class="progress-bar"></div></div>
         </div>`;
-
       card.querySelector('.dl-btn').addEventListener('click', onDownload);
       $grid.appendChild(card);
     });
-
     showGrid();
   }
 
-  // ── Events ──
   $form.addEventListener('submit', async e => {
     e.preventDefault();
     const q = $q.value.trim();
     if (!q) return;
-    setStatus(`<span class="spin"></span>&nbsp; "${q}" 검색 중...`);
+    setStatus(`<span class="spin"></span>&nbsp; "${escH(q)}" 검색 중...`);
     try {
-      const results = await search(q);
-      renderResults(results);
-    } catch (err) {
-      setStatus(err.message, true);
+      renderResults(await search(q));
+    } catch {
+      setStatus('검색에 실패했습니다. 잠시 후 다시 시도하세요.', true);
     }
   });
 
   async function onDownload(e) {
     const btn = e.currentTarget;
     const card = btn.closest('.card');
-    const { id, title } = btn.dataset;
+    const {id, title} = btn.dataset;
     const progWrap = card.querySelector('.progress-wrap');
     const progBar  = card.querySelector('.progress-bar');
     const orig = btn.innerHTML;
-
     btn.disabled = true;
     btn.innerHTML = '<span class="spin"></span> 변환 중...';
     progWrap.style.display = 'none';
-
     try {
       const dlUrl = await getCobaltUrl(id);
-      const filename = title.replace(/[<>:"/\\|?*]/g, '').trim() + '.mp3';
-
+      const filename = title.replace(/[<>:"/\\|?*]/g,'').trim() + '.mp3';
       btn.innerHTML = '<span class="spin"></span> 다운로드 중...';
       progWrap.style.display = 'block';
-
       try {
-        // Android Chrome 호환: fetch → blob → objectURL
-        await downloadBlob(dlUrl, filename, (p) => {
-          progBar.style.width = Math.round(p * 100) + '%';
-        });
+        await downloadBlob(dlUrl, filename, p => { progBar.style.width = Math.round(p*100)+'%'; });
         toast('다운로드 완료!');
       } catch {
-        // CORS 차단 시 새 탭으로 열기 (브라우저가 다운로드 처리)
         window.open(dlUrl, '_blank');
         toast('새 탭에서 다운로드 중...');
       }
-
       progBar.style.width = '100%';
       btn.innerHTML = '&#10003; 완료';
-      setTimeout(() => {
-        btn.innerHTML = orig;
-        btn.disabled = false;
-        progWrap.style.display = 'none';
-        progBar.style.width = '0%';
-      }, 3000);
-
+      setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; progWrap.style.display='none'; progBar.style.width='0%'; }, 3000);
     } catch (err) {
       toast('실패: ' + err.message);
-      btn.innerHTML = orig;
-      btn.disabled = false;
-      progWrap.style.display = 'none';
+      btn.innerHTML = orig; btn.disabled = false; progWrap.style.display = 'none';
     }
   }
 })();

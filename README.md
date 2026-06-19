@@ -2,29 +2,36 @@
 
 유튜브 영상 음원을 MP3로 다운받는 HTML5 웹앱입니다.
 
-## 요구사항
+## 안드로이드에서 실행 (Termux)
 
-로컬 Mac에서 실행해야 합니다.
+### 1. Termux 설치
+
+[F-Droid](https://f-droid.org/packages/com.termux/)에서 Termux 설치  
+(Play Store 버전은 구버전이라 권장하지 않음)
+
+### 2. Termux 패키지 설치
 
 ```bash
-# yt-dlp 설치
-brew install yt-dlp
-
-# ffmpeg 설치
-brew install ffmpeg
-
-# Node.js 설치 (https://nodejs.org 또는 brew)
-brew install node
+pkg update && pkg upgrade -y
+pkg install -y nodejs python ffmpeg git
+pip install yt-dlp
 ```
 
-## 실행
+### 3. 앱 다운로드 및 실행
 
 ```bash
+git clone https://github.com/yuchoi-bb/ytb-dl-apple
+cd ytb-dl-apple
+git checkout claude/ytudl-web-app-mh3d1y
 npm install
 npm start
 ```
 
-브라우저에서 `http://localhost:3000` 접속
+### 4. 브라우저에서 접속
+
+Chrome에서 `http://localhost:3000` 접속
+
+---
 
 ## 기능
 

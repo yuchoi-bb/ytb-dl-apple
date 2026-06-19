@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ytudl-web | YouTube MP3 다운로더</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f0f0f;
+      --surface: #1a1a1a;
+      --card: #212121;
+      --border: #2e2e2e;
+      --accent: #ff4444;
+      --accent-h: #ff6666;
+      --text: #f1f1f1;
+      --muted: #aaa;
+      --r: 10px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    .header {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 20px;
+      display: flex; align-items: center; gap: 16px;
+    }
+    .logo { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .logo-icon { font-size: 20px; color: var(--accent); }
+    .logo-text { font-size: 17px; font-weight: 700; }
+
+    .search-form { display: flex; flex: 1; max-width: 680px; }
+    .search-input {
+      flex: 1; padding: 10px 14px; font-size: 15px;
+      background: var(--bg); color: var(--text);
+      border: 1px solid var(--border); border-right: none;
+      border-radius: var(--r) 0 0 var(--r); outline: none;
+    }
+    .search-input:focus { border-color: #555; }
+    .search-input::placeholder { color: var(--muted); }
+    .search-btn {
+      padding: 10px 20px; font-size: 15px; font-weight: 600;
+      background: var(--accent); color: #fff; border: none;
+      border-radius: 0 var(--r) var(--r) 0; cursor: pointer;
+    }
+    .search-btn:hover { background: var(--accent-h); }
+
+    /* ── Main ── */
+    .main { padding: 24px 20px; }
+
+    .status {
+      text-align: center; padding: 24px;
+      color: var(--muted); font-size: 15px;
+    }
+    .status.error { color: #ff6b6b; }
+    .hidden { display: none !important; }
+
+    /* ── Grid ── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      gap: 16px;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--card); border-radius: var(--r);
+      border: 1px solid var(--border);
+      overflow: hidden; display: flex; flex-direction: column;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,.5); }
+
+    .thumb-wrap {
+      position: relative; aspect-ratio: 16/9;
+      background: #111; overflow: hidden;
+    }
+    .thumb-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .dur {
+      position: absolute; bottom: 6px; right: 8px;
+      background: rgba(0,0,0,.8); color: #fff;
+      font-size: 12px; padding: 2px 6px; border-radius: 4px;
+      font-family: monospace;
+    }
+
+    .card-body {
+      padding: 12px 14px; display: flex;
+      flex-direction: column; flex: 1; gap: 5px;
+    }
+    .card-title {
+      font-size: 14px; font-weight: 600; line-height: 1.4;
+      display: -webkit-box; -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .card-ch { font-size: 13px; color: var(--muted); }
+    .card-footer {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      margin-top: auto; padding-top: 10px;
+    }
+    .card-views { font-size: 12px; color: var(--muted); }
+
+    .dl-btn {
+      display: flex; align-items: center; gap: 5px;
+      padding: 7px 14px; background: var(--accent);
+      color: #fff; border: none; border-radius: 6px;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      white-space: nowrap; transition: background .2s, transform .1s;
+    }
+    .dl-btn:hover { background: var(--accent-h); }
+    .dl-btn:active { transform: scale(.96); }
+    .dl-btn:disabled { background: #444; cursor: not-allowed; }
+
+    /* ── Spinner ── */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spin {
+      display: inline-block; width: 16px; height: 16px;
+      border: 2.5px solid var(--border); border-top-color: var(--accent);
+      border-radius: 50%; animation: spin .7s linear infinite;
+      vertical-align: middle; margin-right: 6px;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 560px) {
+      .header { flex-direction: column; align-items: stretch; gap: 10px; }
+      .logo { justify-content: center; }
+      .search-form { max-width: 100%; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">
+    <span class="logo-icon">&#9654;</span>
+    <span class="logo-text">ytudl-web</span>
+  </div>
+  <form class="search-form" id="form">
+    <input id="q" class="search-input"
+      placeholder="유튜브 제목 또는 아티스트 검색..."
+      autocomplete="off" required />
+    <button type="submit" class="search-btn">검색</button>
+  </form>
+</header>
+
+<main class="main">
+  <div id="status" class="status">검색어를 입력하세요.</div>
+  <div id="grid" class="grid hidden"></div>
+</main>
+
+<script>
+  // ── Invidious instances (fallback chain) ──
+  const INSTANCES = [
+    'https://inv.nadeko.net',
+    'https://invidious.privacyredirect.com',
+    'https://iv.datura.network',
+    'https://invidious.nerdvpn.de',
+    'https://invidious.io'
+  ];
+
+  const COBALT_API = 'https://api.cobalt.tools/';
+
+  const form   = document.getElementById('form');
+  const qInput = document.getElementById('q');
+  const status = document.getElementById('status');
+  const grid   = document.getElementById('grid');
+
+  function setStatus(html, isError = false) {
+    status.innerHTML = html;
+    status.className = 'status' + (isError ? ' error' : '');
+    status.classList.remove('hidden');
+    grid.classList.add('hidden');
+  }
+
+  function showGrid() {
+    status.classList.add('hidden');
+    grid.classList.remove('hidden');
+  }
+
+  function fmtDur(s) {
+    if (!s) return '';
+    const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+    return h > 0
+      ? `${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`
+      : `${m}:${String(sec).padStart(2,'0')}`;
+  }
+
+  function fmtViews(n) {
+    if (!n) return '';
+    if (n >= 1e6) return `${(n/1e6).toFixed(1)}M 뷰`;
+    if (n >= 1e3) return `${Math.round(n/1e3)}K 뷰`;
+    return `${n} 뷰`;
+  }
+
+  // ── Search via Invidious ──
+  async function search(query) {
+    for (const base of INSTANCES) {
+      try {
+        const url = `${base}/api/v1/search?q=${encodeURIComponent(query)}&type=video` +
+          `&fields=videoId,title,author,lengthSeconds,viewCount,videoThumbnails`;
+        const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+        if (!res.ok) continue;
+        return await res.json();
+      } catch {
+        // try next instance
+      }
+    }
+    throw new Error('모든 검색 서버 연결 실패. 잠시 후 다시 시도하세요.');
+  }
+
+  // ── Download via cobalt.tools ──
+  async function getDownloadUrl(videoId) {
+    const res = await fetch(COBALT_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        url: `https://www.youtube.com/watch?v=${videoId}`,
+        downloadMode: 'audio',
+        audioFormat: 'mp3',
+        audioBitrate: '320'
+      }),
+      signal: AbortSignal.timeout(15000)
+    });
+    if (!res.ok) throw new Error(`cobalt HTTP ${res.status}`);
+    const data = await res.json();
+    if (data.status === 'error') throw new Error(data.error?.code || '변환 실패');
+    if (data.url) return data.url;
+    throw new Error('다운로드 URL 없음');
+  }
+
+  // ── Render cards ──
+  function renderResults(items) {
+    if (!items.length) { setStatus('검색 결과가 없습니다.'); return; }
+    grid.innerHTML = '';
+
+    items.forEach(item => {
+      const thumb = (item.videoThumbnails || [])
+        .find(t => t.quality === 'medium' || t.quality === 'default')?.url
+        || `https://img.youtube.com/vi/${item.videoId}/mqdefault.jpg`;
+      const dur = fmtDur(item.lengthSeconds);
+
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <div class="thumb-wrap">
+          <img src="${thumb}" alt="" loading="lazy" />
+          ${dur ? `<span class="dur">${dur}</span>` : ''}
+        </div>
+        <div class="card-body">
+          <div class="card-title">${escHtml(item.title)}</div>
+          <div class="card-ch">${escHtml(item.author)}</div>
+          <div class="card-footer">
+            <span class="card-views">${fmtViews(item.viewCount)}</span>
+            <button class="dl-btn" data-id="${item.videoId}" data-title="${escAttr(item.title)}">
+              &#8595; MP3
+            </button>
+          </div>
+        </div>`;
+
+      card.querySelector('.dl-btn').addEventListener('click', onDownload);
+      grid.appendChild(card);
+    });
+
+    showGrid();
+  }
+
+  function escHtml(s) {
+    return String(s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function escAttr(s) {
+    return String(s).replace(/"/g,'&quot;');
+  }
+
+  // ── Event: search ──
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const q = qInput.value.trim();
+    if (!q) return;
+    setStatus(`<span class="spin"></span> "${q}" 검색 중...`);
+    try {
+      const results = await search(q);
+      renderResults(results);
+    } catch (err) {
+      setStatus(err.message, true);
+    }
+  });
+
+  // ── Event: download ──
+  async function onDownload(e) {
+    const btn = e.currentTarget;
+    const { id, title } = btn.dataset;
+    const orig = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spin"></span> 변환 중...';
+    try {
+      const dlUrl = await getDownloadUrl(id);
+      const a = document.createElement('a');
+      a.href = dlUrl;
+      a.download = title.replace(/[^\w\s가-힣-]/g, '').trim() + '.mp3';
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      btn.innerHTML = '&#10003; 완료';
+      setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; }, 3000);
+    } catch (err) {
+      alert(`다운로드 실패: ${err.message}`);
+      btn.innerHTML = orig;
+      btn.disabled = false;
+    }
+  }
+</script>
+</body>
+</html>
